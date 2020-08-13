@@ -1,0 +1,94 @@
+id: tide_migration_event_featured_image
+label: Migrate event featured image
+migration_group: tide_event_migrations
+class: Drupal\tide_migration\Plugin\migrate\TideEvent
+
+source:
+  plugin: tide_source_events
+  data_fetcher_plugin: tide_event_cache
+  data_parser_plugin: tide_data_parser_json
+  site: '@site'
+  item_selector: field_featured_image/
+
+  urls:
+    -
+      url: https://content.vic.gov.au/api/v1/node/event
+      include:
+        - field_audience
+        - field_tags
+        - field_topic
+        - field_event_category
+        - field_event_details
+        - field_event_details.field_event_requirements
+        - field_featured_image
+        - field_featured_image.field_media_image
+        - field_featured_image.field_media_topic
+      page_filter:
+        offset: 0
+        limit: 10
+      filters:
+        site:
+          condition:
+            path: field_node_site.tid
+            operator: =
+            value: '@site'
+
+  constants:
+    uid: 1
+
+  fields:
+    -
+      name: drupal_internal__mid
+      label: 'Media Id'
+      selector: /drupal_internal__mid
+    -
+      name: name
+      label: 'Media Name'
+      selector: /name
+    -
+      name: status
+      label: 'Status'
+      selector: /status
+    -
+      name: image_alt
+      label: 'Media Alt Text'
+      selector: /meta/alt
+    -
+      name: file_id
+      label: 'File Id'
+      selector: /field_media_image/drupal_internal__fid
+    -
+      name: field_topic
+      label: 'Topic'
+      selector: /field_media_topic
+
+  ids:
+    drupal_internal__mid:
+      type: integer
+
+process:
+  name: name
+  uid: 'constants/uid'
+  'field_media_caption/value': name
+  'field_media_image/target_id':
+    plugin: migration_lookup
+    migration: tide_migration_event_featured_image_file
+    source: file_id
+  'field_media_image/title': name
+  'field_media_image/alt': image_alt
+  status: status
+  field_media_topic:
+    plugin: tide_migration_lookup_taxonomy
+    migration: tide_migration_event_topic
+    source: field_topic
+
+destination:
+  plugin: entity:media
+  default_bundle: image
+
+migration_dependencies:
+  required:
+    - tide_migration_event_featured_image_file
+  optional: []
+
+

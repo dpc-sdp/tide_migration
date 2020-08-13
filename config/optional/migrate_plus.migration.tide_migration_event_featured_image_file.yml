@@ -1,0 +1,103 @@
+id: tide_migration_event_featured_image_file
+label: Migrate event featured image file
+migration_group: tide_event_migrations
+class: Drupal\tide_migration\Plugin\migrate\TideEvent
+
+source:
+  plugin: tide_source_events
+  data_fetcher_plugin: tide_event_cache
+  data_parser_plugin: tide_data_parser_json
+  site: '@site'
+  item_selector: field_media_image/
+
+  urls:
+    -
+      url: https://content.vic.gov.au/api/v1/node/event
+      include:
+        - field_audience
+        - field_tags
+        - field_topic
+        - field_event_category
+        - field_event_details
+        - field_event_details.field_event_requirements
+        - field_featured_image
+        - field_featured_image.field_media_image
+        - field_featured_image.field_media_topic
+      page_filter:
+        offset: 0
+        limit: 10
+      filters:
+        site:
+          condition:
+            path: field_node_site.tid
+            operator: =
+            value: '@site'
+
+  constants:
+    uid: 1
+    file_destination: 'public://event_images/'
+
+  fields:
+    -
+      name: drupal_internal__fid
+      label: 'File Id'
+      selector: /drupal_internal__fid
+    -
+      name: filename
+      label: 'File Name'
+      selector: /filename
+    -
+      name: image_url
+      label: 'File Url'
+      selector: /url
+
+  ids:
+    drupal_internal__fid:
+      type: integer
+
+process:
+  _downloaded_file:
+    -
+      plugin: callback
+      callable: html_entity_decode
+      source: image_url
+    -
+      plugin: tide_file_import_rename
+      destination: 'constants/file_destination'
+      file_exists: rename
+      uid: 'constants/uid'
+      file_rename:
+        filename: filename
+      retry: 5
+      retry_wait: 30
+    -
+      plugin: tide_entity_values
+      type: file
+  fid:
+    plugin: extract
+    source: '@_downloaded_file'
+    index:
+      - fid
+  uuid:
+    plugin: extract
+    source: '@_downloaded_file'
+    index:
+      - uuid
+  filename:
+    plugin: extract
+    source: '@_downloaded_file'
+    index:
+      - filename
+  uri:
+    plugin: extract
+    source: '@_downloaded_file'
+    index:
+      - uri
+  uid: constants/uid
+
+destination:
+  plugin: entity:file
+
+migration_dependencies: {}
+
+

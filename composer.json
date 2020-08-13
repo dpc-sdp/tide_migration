@@ -1,0 +1,20 @@
+{
+  "name": "dpc-sdp/tide_migration",
+  "description": "Central place to store all migrations related to Tide Drupal 8 distribution",
+  "type": "drupal-module",
+  "license": "GPL-2.0-or-later",
+  "require": {},
+  "suggest": {},
+  "repositories": {
+    "drupal": {
+      "type": "composer",
+      "url": "https://packages.drupal.org/8"
+    }
+  },
+  "extra": {
+    "enable-patching": true,
+    "composer-exit-on-patch-failure": true,
+    "patches": {}
+  },
+  "require-dev": {}
+}

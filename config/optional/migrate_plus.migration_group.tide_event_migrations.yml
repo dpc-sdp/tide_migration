@@ -1,0 +1,12 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    modules:
+      - tide_migration
+id: tide_event_migrations
+label: Tide Event Migrations
+source_type: event
+description: Migration group to hold event migrations
+module: null
+shared_configuration: null

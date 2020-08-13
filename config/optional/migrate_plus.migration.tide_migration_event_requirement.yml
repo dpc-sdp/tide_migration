@@ -1,0 +1,74 @@
+id: tide_migration_event_requirement
+label: Migrate event requirement taxonomies
+migration_group: tide_event_migrations
+class: Drupal\tide_migration\Plugin\migrate\TideEvent
+
+source:
+  plugin: tide_source_events
+  data_fetcher_plugin: tide_event_cache
+  data_parser_plugin: tide_data_parser_json
+  site: '@site'
+  item_selector: field_event_requirements/
+
+  urls:
+    -
+      url: https://content.vic.gov.au/api/v1/node/event
+      include:
+        - field_audience
+        - field_tags
+        - field_topic
+        - field_event_category
+        - field_event_details
+        - field_event_details.field_event_requirements
+        - field_featured_image
+        - field_featured_image.field_media_image
+        - field_featured_image.field_media_topic
+      page_filter:
+        offset: 0
+        limit: 10
+      filters:
+        site:
+          condition:
+            path: field_node_site.tid
+            operator: =
+            value: '@site'
+
+  fields:
+    -
+      name: drupal_internal__tid
+      label: 'Term Id'
+      selector: /drupal_internal__tid
+    -
+      name: name
+      label: 'Term Name'
+      selector: /name
+    -
+      name: langcode
+      label: 'Term Langcode'
+      selector: /langcode
+    -
+      name: description
+      label: 'Term Description'
+      selector: /description
+    -
+      name: weight
+      label: 'Term Weight'
+      selector: /weight
+
+  ids:
+    drupal_internal__tid:
+      type: integer
+
+process:
+  name: name
+  langcode: langcode
+  description: description
+  weight: weight
+
+destination:
+  plugin: entity:taxonomy_term
+  default_bundle: event_requirements
+
+migration_dependencies: {}
+
+
