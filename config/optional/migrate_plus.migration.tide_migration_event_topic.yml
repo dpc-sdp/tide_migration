@@ -1,6 +1,6 @@
 id: tide_migration_event_topic
 label: Migrate event topic
-migration_group: tide_event_migrations
+migration_group: tide_event_migration
 class: Drupal\tide_migration\Plugin\migrate\TideEvent
 
 source:

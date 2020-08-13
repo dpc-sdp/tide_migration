@@ -1,6 +1,6 @@
 id: tide_migration_event_featured_image
 label: Migrate event featured image
-migration_group: tide_event_migrations
+migration_group: tide_event_migration
 class: Drupal\tide_migration\Plugin\migrate\TideEvent
 
 source:

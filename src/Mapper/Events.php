@@ -1,24 +1,25 @@
 <?php
+
 namespace Drupal\tide_migration\Mapper;
 
 class Events {
 
   /**
-   * @param array $json_response
-   * @return null
+   * @param array|null $json_response
+   * @return array|null
    */
   public function convert(?array $json_response): ?array {
     if (empty($json_response)) {
       return NULL;
     }
 
-    $event_categories = $this->mapEventsCategories($json_response);
+    $event_categories = $this->mapTaxonomies($json_response, 'taxonomy_term--event');
     $event_image_files = $this->mapEventsImageFiles($json_response);
-    $event_topics = $this->mapEventsTopics($json_response);
+    $event_topics = $this->mapTaxonomies($json_response, 'taxonomy_term--topic');
     $event_featured_images = $this->mapEventsFeaturedImage($json_response, $event_image_files, $event_topics);
-    $event_tags = $this->mapEventsTags($json_response);
-    $event_audience = $this->mapEventsAudience($json_response);
-    $event_requirements = $this->mapEventsRequirements($json_response);
+    $event_tags = $this->mapTaxonomies($json_response, 'taxonomy_term--tags');
+    $event_audience = $this->mapTaxonomies($json_response, 'taxonomy_term--audience');
+    $event_requirements = $this->mapTaxonomies($json_response, 'taxonomy_term--event_requirements');
     $event_details = $this->mapEventDetails($json_response, $event_requirements);
 
     $content['field_event_category'] = $event_categories;
@@ -43,6 +44,16 @@ class Events {
     return $content;
   }
 
+  /**
+   * @param array|null $content
+   * @param array|null $event_categories
+   * @param array|null $event_topics
+   * @param array|null $event_tags
+   * @param array|null $event_audience
+   * @param array|null $event_details
+   * @param array|null $event_featured_images
+   * @return array|null
+   */
   private function mapEvents(
     ?array $content,
     ?array $event_categories,
@@ -91,7 +102,12 @@ class Events {
     return $events;
   }
 
-  private function lookUpFeaturedImage(array $config, array $event_featured_images) {
+  /**
+   * @param array $config
+   * @param array $event_featured_images
+   * @return array
+   */
+  private function lookUpFeaturedImage(array $config, array $event_featured_images): array {
     $data = $config['data'];
     $featured_image = [];
 
@@ -106,7 +122,12 @@ class Events {
     return $featured_image;
   }
 
-  private function lookUpParagraph(array $config, array $details) {
+  /**
+   * @param array $config
+   * @param array $details
+   * @return array
+   */
+  private function lookUpParagraph(array $config, array $details): array {
     $data = $config['data'];
     $paragraphs = [];
 
@@ -123,7 +144,12 @@ class Events {
     return $paragraphs;
   }
 
-  private function lookUpImageFile(array $config, array $image_files) {
+  /**
+   * @param array $config
+   * @param array $image_files
+   * @return array
+   */
+  private function lookUpImageFile(array $config, array $image_files): array {
     $data = $config['data'];
     $media = [];
 
@@ -138,7 +164,12 @@ class Events {
     return $media;
   }
 
-  private function lookUpTaxonomy(array $config, array $taxonomies_data) {
+  /**
+   * @param array $config
+   * @param array $taxonomies_data
+   * @return array
+   */
+  private function lookUpTaxonomy(array $config, array $taxonomies_data): array {
     $data = $config['data'];
     $taxonomies = [];
 
@@ -173,23 +204,11 @@ class Events {
     return $taxonomies;
   }
 
-  private function mapEventsRequirements(array $content) {
-    if (empty($content)) {
-      return NULL;
-    }
-
-    $requirements = [];
-
-    foreach ($content['included'] as $data) {
-      if ($data['type'] === 'taxonomy_term--event_requirements') {
-        $requirements = array_merge($this->mapEventTaxonomy($data), $requirements);
-      }
-    }
-
-    return $requirements;
-  }
-
-  private function mapEventsImageFiles(array $content) {
+  /**
+   * @param array $content
+   * @return array|null
+   */
+  private function mapEventsImageFiles(array $content): ?array {
     if (empty($content)) {
       return NULL;
     }
@@ -213,103 +232,32 @@ class Events {
     return $image_files;
   }
 
-  private function mapEventsCategories(array $content) {
+  /**
+   * @param array $content
+   * @param string $type
+   * @return array|null
+   */
+  private function mapTaxonomies(array $content, string $type): ?array {
     if (empty($content)) {
       return NULL;
     }
 
-    $categories = [];
+    $taxonomies = [];
 
     foreach ($content['included'] as $data) {
-      if ($data['type'] === 'taxonomy_term--event') {
-        $categories = array_merge($this->mapEventTaxonomy($data), $categories);
+      if ($data['type'] === $type) {
+        $taxonomies = array_merge($this->mapEventTaxonomy($data), $taxonomies);
       }
     }
 
-    return $categories;
+    return $taxonomies;
   }
 
-  private function mapEventsTopics(array $content) {
-    if (empty($content)) {
-      return NULL;
-    }
-
-    $topics = [];
-
-    foreach ($content['included'] as $data) {
-      if ($data['type'] === 'taxonomy_term--topic') {
-        $topics = array_merge($this->mapEventTaxonomy($data), $topics);
-      }
-    }
-
-    return $topics;
-  }
-
-  private function mapEventsTags(array $content) {
-    if (empty($content)) {
-      return NULL;
-    }
-
-    $tags = [];
-
-    foreach ($content['included'] as $data) {
-      if ($data['type'] === 'taxonomy_term--tags') {
-        $tags = array_merge($this->mapEventTaxonomy($data), $tags);
-      }
-    }
-
-    return $tags;
-  }
-
-  private function mapEventsAudience(array $content) {
-    if (empty($content)) {
-      return NULL;
-    }
-
-    $audience = [];
-
-    foreach ($content['included'] as $data) {
-      if ($data['type'] === 'taxonomy_term--audience') {
-        $audience = array_merge($this->mapEventTaxonomy($data), $audience);
-      }
-    }
-
-    return $audience;
-  }
-
-  private function mapEventsFeaturedImage(array $content, array $image_files, array $topics) {
-    if (empty($content)) {
-      return NULL;
-    }
-
-    $featured_images = [];
-
-    foreach ($content['included'] as $data) {
-      if ($data['type'] === 'media--image') {
-        $featured_images[] = $this->mapFeaturedImage($data, $image_files, $topics);
-      }
-    }
-
-    return $featured_images;
-  }
-
-  private function mapEventDetails(array $content, $event_requirements) {
-    if (empty($content)) {
-      return NULL;
-    }
-
-    $event_details = [];
-
-    foreach ($content['included'] as $data) {
-      if ($data['type'] === 'paragraph--event_details') {
-        $event_details[] = $this->mapEventDetail($data, $event_requirements);
-      }
-    }
-
-    return $event_details;
-  }
-
-  private function mapEventTaxonomy(array $config) {
+  /**
+   * @param array $config
+   * @return array|array[]
+   */
+  private function mapEventTaxonomy(array $config): array {
     $parent_config = $config['relationships']['parent']['data'];
     $parent_initial = array_shift($parent_config);
     $term_explode = explode('--', $parent_initial['type']);
@@ -328,7 +276,55 @@ class Events {
     ];
   }
 
-  private function mapEventDetail(array $content, array $event_requirements) {
+  /**
+   * @param array $content
+   * @param $event_requirements
+   * @return array|null
+   */
+  private function mapEventDetails(array $content, $event_requirements): ?array {
+    if (empty($content)) {
+      return NULL;
+    }
+
+    $event_details = [];
+
+    foreach ($content['included'] as $data) {
+      if ($data['type'] === 'paragraph--event_details') {
+        $event_details[] = $this->mapEventDetail($data, $event_requirements);
+      }
+    }
+
+    return $event_details;
+  }
+
+  /**
+   * @param array $content
+   * @param array $image_files
+   * @param array $topics
+   * @return array|null
+   */
+  private function mapEventsFeaturedImage(array $content, array $image_files, array $topics): ?array {
+    if (empty($content)) {
+      return NULL;
+    }
+
+    $featured_images = [];
+
+    foreach ($content['included'] as $data) {
+      if ($data['type'] === 'media--image') {
+        $featured_images[] = $this->mapFeaturedImage($data, $image_files, $topics);
+      }
+    }
+
+    return $featured_images;
+  }
+
+  /**
+   * @param array $content
+   * @param array $event_requirements
+   * @return array
+   */
+  private function mapEventDetail(array $content, array $event_requirements): array {
     return [
       'id' => $content['id'],
       'type' => $content['type'],
@@ -345,7 +341,13 @@ class Events {
     ];
   }
 
-  private function mapFeaturedImage(array $content, array $image_files, array $topics) {
+  /**
+   * @param array $content
+   * @param array $image_files
+   * @param array $topics
+   * @return array
+   */
+  private function mapFeaturedImage(array $content, array $image_files, array $topics): array {
     $topic = NULL;
 
     $field_media_topic = $content['relationships']['field_media_topic'];

@@ -6,7 +6,7 @@ use Symfony\Component\Yaml\Yaml;
 
 class ConfigFetch {
 
-  const FILENAME = 'tide_migrations.settings.yml';
+  const FILENAME = 'tide_migration.settings.yml';
 
   public function fetchValue($key) {
     $value = NULL;

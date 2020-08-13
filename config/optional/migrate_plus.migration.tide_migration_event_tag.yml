@@ -1,6 +1,6 @@
 id: tide_migration_event_tag
 label: Migrate event tag taxonomies
-migration_group: tide_event_migrations
+migration_group: tide_event_migration
 class: Drupal\tide_migration\Plugin\migrate\TideEvent
 
 source:

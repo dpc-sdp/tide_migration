@@ -79,7 +79,7 @@ class TideEventCache extends Http {
    * {@inheritdoc}
    */
   public function getResponseContent($url) {
-    $cid = 'tide_migrations:tide_migration_events_cache:url:' . hash('sha256', $url);
+    $cid = 'tide_migration:tide_migration_events_cache:url:' . hash('sha256', $url);
 
     $cached_response = $this->cache->get($cid);
     if (!empty($cached_response)) {
@@ -96,7 +96,7 @@ class TideEventCache extends Http {
         $this->cache->set($cid, $content, ($this->cacheLifetime >= 0) ? (\Drupal::time()->getRequestTime() + $this->cacheLifetime) : Cache::PERMANENT);
       }
       catch (\Exception $exception) {
-        watchdog_exception('tide_migrations', $exception, NULL, [], RfcLogLevel::INFO);
+        watchdog_exception('tide_migration', $exception, NULL, [], RfcLogLevel::INFO);
       }
     }
 

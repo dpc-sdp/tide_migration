@@ -4,9 +4,9 @@ dependencies:
   enforced:
     modules:
       - tide_migration
-id: tide_event_migrations
-label: Tide Event Migrations
+id: tide_event_migration
+label: Tide Event Migration
 source_type: event
-description: Migration group to hold event migrations
+description: Migration group to hold event migration
 module: null
 shared_configuration: null
