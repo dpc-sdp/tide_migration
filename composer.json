@@ -7,7 +7,7 @@
         "dpc-sdp/tide_core": "^1.2.6"
     },
     "require-dev": {
-        "phpunit/phpunit": "^8.4.1"
+        "drupal/core-dev": "^8.8"
     },
     "autoload": {
         "psr-4": {

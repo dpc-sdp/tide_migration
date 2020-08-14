@@ -45,7 +45,7 @@ class TideSourceEvents extends Url {
    */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration) {
     $this->dataFetcher = \Drupal::service('plugin.manager.migrate_plus.data_fetcher')->createInstance('http', []);
-    $this->urlFilterBuilder = new UrlFilterBuilder($this->dataFetcher);
+    $this->urlFilterBuilder = new UrlFilterBuilder($this->dataFetcher, $this->moduleHandler);
 
     $urls = $this->urlFilterBuilder->generateUrls($configuration);
 

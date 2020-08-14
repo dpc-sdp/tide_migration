@@ -2,11 +2,24 @@
 
 namespace Drupal\Tests\tide_migration\Mapper;
 
+use Drupal\Core\DependencyInjection\ContainerBuilder;
+use Drupal\Tests\UnitTestCase;
 use Drupal\tide_migration\Mapper\Events;
-use PHPUnit\Framework\TestCase;
 
-class EventsTest extends TestCase
+/**
+ * @coversDefaultClass \Drupal\tide_migration\Mapper\Events
+ * @group tide_migration
+ */
+class EventsTest extends UnitTestCase
 {
+
+  public function setUp()
+  {
+    parent::setUp();
+
+    $container = new ContainerBuilder();
+    \Drupal::setContainer($container);
+  }
 
   public function testMappingOfEventsReturnNullOnEmptyArray()
   {

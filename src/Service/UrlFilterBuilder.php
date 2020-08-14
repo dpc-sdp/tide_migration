@@ -1,9 +1,11 @@
 <?php
 namespace Drupal\tide_migration\Service;
 
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\migrate_plus\DataFetcherPluginBase;
+use Drupal\migrate_plus\DataFetcherPluginInterface;
 use Drupal\tide_migration\Enum\ReservedConfigNameEnum;
-use GuzzleHttp\Stream\StreamInterface;
+use Psr\Http\Message\StreamInterface;
 
 class UrlFilterBuilder {
 
@@ -20,13 +22,138 @@ class UrlFilterBuilder {
    */
   private $configFetch;
 
-  public function __construct($dataFetcher) {
+  /**
+   * UrlFilterBuilder constructor.
+   * @param DataFetcherPluginInterface $dataFetcher
+   * @param ModuleHandlerInterface $moduleHandler
+   */
+  public function __construct(DataFetcherPluginInterface $dataFetcher, ModuleHandlerInterface $moduleHandler) {
     $this->reservedConfigNameEnum = new ReservedConfigNameEnum();
-    $this->configFetch = new ConfigFetch();
+    $this->configFetch = new ConfigFetch($moduleHandler);
     $this->dataFetcher = $dataFetcher;
   }
 
-  public function generateOffsetUrls($url, $output) {
+  /**
+   * @param $filters
+   * @return mixed
+   */
+  private function recursiveFilterChange(&$filters) {
+    foreach ($filters as $key => $value) {
+      if (is_array($value)) {
+        $filters[$key] = $this->recursiveFilterChange($value);
+      } else {
+        if (strpos($value, '@') !== FALSE) {
+          if ($this->reservedConfigNameEnum->validate(ltrim($value, '@')) === TRUE) {
+            $filters[$key] = $this->configFetch->fetchValue(ltrim($value, '@'));
+          }
+        }
+      }
+    }
+
+    return $filters;
+  }
+
+  /**
+   * @param array $configuration
+   * @return array
+   */
+  public function buildInitialUrlFilters(array $configuration) {
+    $urls = [];
+
+    if (!empty($configuration['urls'])) {
+      foreach ($configuration['urls'] as $url) {
+        $filters = [];
+
+        if (!empty($url['filters'])) {
+          $data = $url['filters'];
+          $filters['filter'] = $this->recursiveFilterChange($data);
+        }
+
+        if (!empty($url['include'])) {
+          $filters['include'] = implode(',', $url['include']);
+        }
+
+        if (!empty($url['page_filter'])) {
+          $filters['page'] = $url['page_filter'];
+        }
+
+        if (!empty($configuration['site']) && is_numeric($configuration['site'])) {
+          $filters['site'] = $configuration['site'];
+
+          if (strpos($configuration['site'], '@') !== FALSE) {
+            if ($this->reservedConfigNameEnum->validate(ltrim($configuration['site'], '@')) === TRUE) {
+              $filters['site'] = $this->configFetch->fetchValue(ltrim($configuration['site'], '@'));
+            }
+          }
+        }
+
+        $urls[] = $url['url'] . '?' .http_build_query($filters);
+      }
+    }
+
+    return $urls;
+  }
+
+  /**
+   * Build source url with filters and fields to include.
+   *
+   * @param array $configuration
+   * @return array
+   */
+  public function generateUrls(array $configuration) {
+    $urls = [];
+
+    $initial_urls = $this->buildInitialUrlFilters($configuration);
+
+    foreach ($initial_urls as $url) {
+      $urls = array_merge($this->buildUrlOffsets($url), $urls);
+    }
+
+    return $urls;
+  }
+
+  /**
+   * @param string $url
+   * @return array|string[]
+   */
+  private function buildUrlOffsets(string $url) {
+    /** @var StreamInterface $stream */
+    $stream = $this->dataFetcher->getResponseContent($url);
+
+    $source_data = json_decode($stream->getContents(), TRUE);
+
+    if (!empty($source_data['links']) && !empty($source_data['links']['last']) && !empty($source_data['links']['last']['href'])) {
+      $related_link = $source_data['links']['last']['href'];
+
+      $parsed_url = parse_url($related_link);
+
+      if ($parsed_url !== FALSE) {
+        if (!empty($parsed_url['query'])) {
+          parse_str($parsed_url['query'], $output);
+          $offset_urls = $this->generateOffsetUrls($url, $output);
+
+          if (!empty($offset_urls)) {
+            return $offset_urls;
+          }
+        }
+      }
+    }
+
+    return [$url];
+  }
+
+  /**
+   * Build incremental urls based on the last url present in the json data.
+   *
+   * @param string $url
+   * @param array $output
+   * @return array|null
+   */
+  private function generateOffsetUrls(string $url, array $output) {
+    if (!isset($output['page']['offset']) && !isset($output['page']['limit'])) {
+      return NULL;
+    }
+
     $last_offset = $output['page']['offset'];
     $limit = $output['page']['limit'];
     $page_count = $last_offset / $limit;
@@ -45,95 +172,6 @@ class UrlFilterBuilder {
     }
 
     return $urls;
-  }
-
-  private function recursiveFilterChange(&$filters) {
-    foreach ($filters as $key => $value) {
-      if (is_array($value)) {
-        $this->recursiveFilterChange($value);
-      } else {
-        if (strpos($value, '@') !== FALSE) {
-          if ($this->reservedConfigNameEnum->validate(ltrim($value, '@')) === TRUE) {
-            $filters[$key] = $this->configFetch->fetchValue(ltrim($value, '@'));
-          }
-        }
-      }
-    }
-  }
-
-  /**
-   * Build source url with filters and fields to include.
-   *
-   * @param array $configuration
-   */
-  public function buildInitialUrlFilters(array $configuration) {
-    $urls = [];
-
-    foreach ($configuration['urls'] as $url) {
-      $filters = [];
-
-      if (!empty($url['filters'])) {
-        $data = $url['filters'];
-        $this->recursiveFilterChange($data);
-        $filters['filter'] = $data;
-      }
-
-      if (!empty($url['include'])) {
-        $filters['include'] = implode(',', $url['include']);
-      }
-
-      if (!empty($url['page_filter'])) {
-        $filters['page'] = $url['page_filter'];
-      }
-
-      if (!empty($configuration['site']) && is_numeric($configuration['site'])) {
-        $filters['site'] = $configuration['site'];
-
-        if (strpos($configuration['site'], '@') !== FALSE) {
-          if ($this->reservedConfigNameEnum->validate(ltrim($configuration['site'], '@')) === TRUE) {
-            $filters['site'] = $this->configFetch->fetchValue(ltrim($configuration['site'], '@'));
-          }
-        }
-      }
-
-      $urls[] = $url['url'] . '?' .http_build_query($filters);
-    }
-
-    return $urls;
-  }
-
-  /**
-   * Build source url with filters and fields to include.
-   */
-  public function generateUrls(array $configuration) {
-    $urls = [];
-
-    $initial_event_urls = $this->buildInitialUrlFilters($configuration);
-
-    foreach ($initial_event_urls as $url) {
-      $urls = array_merge($this->buildEventUrlOffsets($url), $urls);
-    }
-
-    return $urls;
-  }
-
-  public function buildEventUrlOffsets(string $url) {
-    /** @var StreamInterface $stream */
-    $stream = $this->dataFetcher->getResponseContent($url);
-
-    $source_data = json_decode($stream->getContents(), TRUE);
-
-    if (!empty($source_data['links']) && !empty($source_data['links']['last']) && !empty($source_data['links']['last']['href'])) {
-      $related_link = $source_data['links']['last']['href'];
-
-      $parsed_url = parse_url($related_link);
-
-      parse_str($parsed_url['query'], $output);
-
-      return $this->generateOffsetUrls($url, $output);
-    }
-
-    return [$url];
   }
 
 }

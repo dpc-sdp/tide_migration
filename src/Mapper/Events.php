@@ -8,7 +8,7 @@ class Events {
    * @param array|null $json_response
    * @return array|null
    */
-  public function convert(?array $json_response): ?array {
+  public function convert(?array $json_response) {
     if (empty($json_response)) {
       return NULL;
     }
@@ -62,7 +62,7 @@ class Events {
     ?array $event_audience,
     ?array $event_details,
     ?array $event_featured_images
-  ): ?array {
+  ) {
     if (empty($content)) {
       return NULL;
     }
@@ -107,7 +107,7 @@ class Events {
    * @param array $event_featured_images
    * @return array
    */
-  private function lookUpFeaturedImage(array $config, array $event_featured_images): array {
+  private function lookUpFeaturedImage(array $config, array $event_featured_images) {
     $data = $config['data'];
     $featured_image = [];
 
@@ -127,7 +127,7 @@ class Events {
    * @param array $details
    * @return array
    */
-  private function lookUpParagraph(array $config, array $details): array {
+  private function lookUpParagraph(array $config, array $details) {
     $data = $config['data'];
     $paragraphs = [];
 
@@ -149,7 +149,7 @@ class Events {
    * @param array $image_files
    * @return array
    */
-  private function lookUpImageFile(array $config, array $image_files): array {
+  private function lookUpImageFile(array $config, array $image_files) {
     $data = $config['data'];
     $media = [];
 
@@ -169,7 +169,7 @@ class Events {
    * @param array $taxonomies_data
    * @return array
    */
-  private function lookUpTaxonomy(array $config, array $taxonomies_data): array {
+  private function lookUpTaxonomy(array $config, array $taxonomies_data) {
     $data = $config['data'];
     $taxonomies = [];
 
@@ -208,7 +208,7 @@ class Events {
    * @param array $content
    * @return array|null
    */
-  private function mapEventsImageFiles(array $content): ?array {
+  private function mapEventsImageFiles(array $content) {
     if (empty($content)) {
       return NULL;
     }
@@ -237,7 +237,7 @@ class Events {
    * @param string $type
    * @return array|null
    */
-  private function mapTaxonomies(array $content, string $type): ?array {
+  private function mapTaxonomies(array $content, string $type) {
     if (empty($content)) {
       return NULL;
     }
@@ -257,7 +257,7 @@ class Events {
    * @param array $config
    * @return array|array[]
    */
-  private function mapEventTaxonomy(array $config): array {
+  private function mapEventTaxonomy(array $config) {
     $parent_config = $config['relationships']['parent']['data'];
     $parent_initial = array_shift($parent_config);
     $term_explode = explode('--', $parent_initial['type']);
@@ -281,7 +281,7 @@ class Events {
    * @param $event_requirements
    * @return array|null
    */
-  private function mapEventDetails(array $content, $event_requirements): ?array {
+  private function mapEventDetails(array $content, $event_requirements) {
     if (empty($content)) {
       return NULL;
     }
@@ -303,7 +303,7 @@ class Events {
    * @param array $topics
    * @return array|null
    */
-  private function mapEventsFeaturedImage(array $content, array $image_files, array $topics): ?array {
+  private function mapEventsFeaturedImage(array $content, array $image_files, array $topics) {
     if (empty($content)) {
       return NULL;
     }
@@ -324,7 +324,7 @@ class Events {
    * @param array $event_requirements
    * @return array
    */
-  private function mapEventDetail(array $content, array $event_requirements): array {
+  private function mapEventDetail(array $content, array $event_requirements) {
     return [
       'id' => $content['id'],
       'type' => $content['type'],
@@ -347,7 +347,7 @@ class Events {
    * @param array $topics
    * @return array
    */
-  private function mapFeaturedImage(array $content, array $image_files, array $topics): array {
+  private function mapFeaturedImage(array $content, array $image_files, array $topics) {
     $topic = NULL;
 
     $field_media_topic = $content['relationships']['field_media_topic'];
