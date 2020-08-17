@@ -1,14 +1,18 @@
-id: tide_migration_event_requirement
-label: Migrate event requirement taxonomies
-migration_group: tide_event_migration
+id: tide_migration_event_audience
+label: Migrate event audience taxonomies
+migration_group: tide_migration_event
 class: Drupal\tide_migration\Plugin\migrate\TideEvent
+dependencies:
+  enforced:
+    modules:
+      - tide_migration
 
 source:
   plugin: tide_source_events
   data_fetcher_plugin: tide_event_cache
   data_parser_plugin: tide_data_parser_json
   site: '@site'
-  item_selector: field_event_requirements/
+  item_selector: field_audience/
 
   urls:
     -
@@ -54,6 +58,10 @@ source:
       name: weight
       label: 'Term Weight'
       selector: /weight
+    -
+      name: vid
+      label: 'Term Parent Vid'
+      selector: /parent
 
   ids:
     drupal_internal__tid:
@@ -61,13 +69,10 @@ source:
 
 process:
   name: name
-  langcode: langcode
-  description: description
-  weight: weight
 
 destination:
   plugin: entity:taxonomy_term
-  default_bundle: event_requirements
+  default_bundle: audience
 
 migration_dependencies: {}
 

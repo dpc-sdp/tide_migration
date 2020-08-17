@@ -1,14 +1,18 @@
-id: tide_migration_event_tag
-label: Migrate event tag taxonomies
-migration_group: tide_event_migration
+id: tide_migration_event_category
+label: Migrate event category taxonomies
+migration_group: tide_migration_event
 class: Drupal\tide_migration\Plugin\migrate\TideEvent
+dependencies:
+  enforced:
+    modules:
+      - tide_migration
 
 source:
   plugin: tide_source_events
   data_fetcher_plugin: tide_event_cache
   data_parser_plugin: tide_data_parser_json
   site: '@site'
-  item_selector: field_tags/
+  item_selector: field_event_category/
 
   urls:
     -
@@ -68,7 +72,7 @@ process:
 
 destination:
   plugin: entity:taxonomy_term
-  default_bundle: tags
+  default_bundle: event
 
 migration_dependencies: {}
 
