@@ -1,33 +1,26 @@
 <?php
+
 namespace Drupal\tide_migration\Service;
 
-use Drupal\Core\Extension\ModuleHandlerInterface;
-use Drupal\Core\Site\Settings;
-use Symfony\Component\Yaml\Yaml;
-
-class ConfigFetch {
-
-  const FILENAME = 'tide_migration.settings.yml';
-
-  /** @var ModuleHandlerInterface */
-  private $moduleHandler;
+class ConfigFetch
+{
+  /** @var \Drupal\Core\Config\ImmutableConfig  */
+  private $config;
 
   /**
    * ConfigFetch constructor.
-   * @param ModuleHandlerInterface $moduleHandler
    */
-  public function __construct(ModuleHandlerInterface $moduleHandler)
+  public function __construct()
   {
-    $this->moduleHandler = $moduleHandler;
+    $this->config = \Drupal::config('tide_migration.settings');
   }
 
   /**
    * @param $key
-   * @return mixed|null
+   * @return array|mixed|null
    */
-  public function fetchValue($key) {
-    $value = NULL;
-    $config = \Drupal::config('tide_migration.settings');
-    return $config->get($key);
+  public function fetchValue($key)
+  {
+    return $this->config->get($key);
   }
 }

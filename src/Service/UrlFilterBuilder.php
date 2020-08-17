@@ -25,11 +25,10 @@ class UrlFilterBuilder {
   /**
    * UrlFilterBuilder constructor.
    * @param DataFetcherPluginInterface $dataFetcher
-   * @param ModuleHandlerInterface $moduleHandler
    */
-  public function __construct(DataFetcherPluginInterface $dataFetcher, ModuleHandlerInterface $moduleHandler) {
+  public function __construct(DataFetcherPluginInterface $dataFetcher) {
     $this->reservedConfigNameEnum = new ReservedConfigNameEnum();
-    $this->configFetch = new ConfigFetch($moduleHandler);
+    $this->configFetch = new ConfigFetch();
     $this->dataFetcher = $dataFetcher;
   }
 
