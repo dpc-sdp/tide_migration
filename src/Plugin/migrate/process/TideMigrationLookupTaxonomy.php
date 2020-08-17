@@ -2,29 +2,14 @@
 
 namespace Drupal\tide_migration\Plugin\migrate\process;
 
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\migrate\MigrateExecutableInterface;
+use Drupal\migrate\Plugin\MigrateProcessInterface;
+use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate\ProcessPluginBase;
 use Drupal\migrate\Row;
-
-
-/**
- * Perform custom value transformations.
- *
- * @MigrateProcessPlugin(
- *   id = "tide_migration_lookup_taxonomy"
- * )
- *
- * To do custom value transformations use the following:
- *
- * @code
- * field_text:
- *   plugin: tide_migration_lookup_taxonomy
- *   migration: migration_id
- *   source: taxonomy array: ['taxonomy' => ['parent' => ['vid' => 'vocabulary name']], 'term' => ['drupal_internal__tid' => 123, 'name' => 'abc']]
- * @endcode
- *
- */
-
+use Drupal\tide_migration\Service\TaxonomyLookup;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * This plugin looks up taxonomy in migration first and if not found, it will look into existing terms already loaded on the website.
@@ -46,68 +31,82 @@ use Drupal\migrate\Row;
  *   source: taxonomy array: ['taxonomy' => ['parent' => ['vid' => 'vocabulary name']], 'term' => ['drupal_internal__tid' => 123, 'name' => 'abc']]
  * @endcode
  */
-class TideMigrationLookupTaxonomy extends ProcessPluginBase {
+class TideMigrationLookupTaxonomy extends ProcessPluginBase implements ContainerFactoryPluginInterface
+{
+
+  /**
+   * The currently running migration.
+   *
+   * @var \Drupal\migrate\Plugin\MigrationInterface
+   */
+  protected $migration;
+
+  /**
+   * @var TaxonomyLookup
+   */
+  protected $taxonomy_lookup;
+
+  /**
+   * TideGenerateEventDetailsParagraph constructor.
+   * @param array $configuration
+   * @param $plugin_id
+   * @param $plugin_definition
+   * @param TaxonomyLookup $taxonomy_lookup
+   * @param MigrationInterface|null $migration
+   */
+  public function __construct(
+    array $configuration,
+    $plugin_id,
+    $plugin_definition,
+    TaxonomyLookup $taxonomy_lookup,
+    MigrationInterface $migration
+  )
+  {
+    parent::__construct($configuration, $plugin_id, $plugin_definition);
+
+    if (!$migration instanceof MigrationInterface) {
+      throw new \InvalidArgumentException("The sixth argument to " . __METHOD__ . " must be an instance of MigrationInterface.");
+    }
+
+    $this->migration = $migration;
+
+    $this->taxonomy_lookup = $taxonomy_lookup;
+  }
 
   /**
    * {@inheritdoc}
    */
-  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
+  public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition, MigrationInterface $migration = NULL)
+  {
+    return new static(
+      $configuration,
+      $plugin_id,
+      $plugin_definition,
+      new TaxonomyLookup(),
+      $migration
+    );
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property)
+  {
     $migration = $this->configuration['migration'];
-    $lookupTid =  $this->lookupTaxonomyInMigration($migration, $value);
+    $lookupTid = $this->taxonomy_lookup->lookupTaxonomyInMigration($migration, $value['drupal_internal__tid']);
 
     if (empty($lookupTid)) {
-      $lookupTid = $this->lookupTaxonomyInExistingTerms($value);
+      $lookupTid = $this->taxonomy_lookup->lookupTaxonomyInExistingTerms($value['name'], $value['parent']);
     }
-
 
     return $lookupTid;
   }
 
   /**
-   * @param $value
-   * @return int
-   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
-   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
-   */
-  private function lookupTaxonomyInExistingTerms($value) {
-    /** @var \Drupal\Core\Entity\EntityStorageInterface $taxonomy_term_service */
-    $taxonomy_term_service = \Drupal::entityTypeManager()->getStorage('taxonomy_term');
-    $tree = $taxonomy_term_service->loadTree(strtolower($value['parent']));
-    $term = $value['name'];
-
-    foreach ($tree as $item) {
-      if (strtolower($item->name) === strtolower($term)) {
-        return $item->tid;
-      }
-    }
-
-    return 0;
-  }
-
-  /**
-   * @param $migration
-   * @param $value
-   * @return int
-   */
-  private function lookupTaxonomyInMigration($migration, $value) {
-    $database = \Drupal::database();
-    $query = $database->select('migrate_map_' . $migration, 'migration');
-    $query->condition('migration.sourceid1', $value['drupal_internal__tid'], '=');
-    $query->fields('migration', ['sourceid1', 'destid1']);
-
-    $response = $query->execute()->fetch();
-
-    if (!empty($response) && !empty($response->destid1)) {
-      return $response->destid1;
-    }
-
-    return 0;
-  }
-
-  /**
    * {@inheritdoc}
    */
-  public function multiple() {
+  public function multiple()
+  {
     return TRUE;
   }
 }
