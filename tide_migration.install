@@ -1,1 +1,25 @@
 <?php
+
+/**
+ * @file
+ * Contains tide_migration.install.
+ */
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Removes stale migration configs during uninstall.
+ */
+function tide_migration_uninstall() {
+    $database = \Drupal::database();
+    $query = $database->select('config', 'c');
+    $query->fields('c', ['name']);
+    $query->condition('field_1', "%" . $database->escapeLike('migrate_plus.migration.tide_migration') . "%", 'LIKE');
+
+    $config_names = $query->execute()->fetchAll();
+
+    // Delete each config using configFactory.
+    foreach ($config_names as $config_name) {
+        \Drupal::configFactory()->getEditable($config_name->name)->delete();
+    }
+}
