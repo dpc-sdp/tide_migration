@@ -27,28 +27,7 @@ class ConfigFetch {
    */
   public function fetchValue($key) {
     $value = NULL;
-    $module_path = $this->moduleHandler->getModule('tide_migration')->getPath();
-
-    if (file_exists($module_path . '/config/' . $this::FILENAME)) {
-      $file_contents = file_get_contents($module_path . '/config/' . $this::FILENAME);
-      $yml_data = Yaml::parse($file_contents);
-
-      if (!empty($yml_data[$key])) {
-        $value = $yml_data[$key];
-      }
-    }
-
-    $sync_directory = Settings::get('config_sync_directory');
-
-    if (!empty($sync_directory) && file_exists($sync_directory . '/' . $this::FILENAME)) {
-      $file_contents = file_get_contents($sync_directory . '/' . $this::FILENAME);
-      $yml_data = Yaml::parse($file_contents);
-
-      if (!empty($yml_data[$key])) {
-        $value = $yml_data[$key];
-      }
-    }
-
-    return $value;
+    $config = \Drupal::config('tide_migration.settings');
+    return $config->get($key);
   }
 }
