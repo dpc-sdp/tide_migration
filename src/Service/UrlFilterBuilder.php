@@ -76,7 +76,7 @@ class UrlFilterBuilder {
           $filters['page'] = $url['page_filter'];
         }
 
-        if (!empty($configuration['site']) && is_numeric($configuration['site'])) {
+        if (!empty($configuration['site'])) {
           $filters['site'] = $configuration['site'];
 
           if (strpos($configuration['site'], '@') !== FALSE) {
