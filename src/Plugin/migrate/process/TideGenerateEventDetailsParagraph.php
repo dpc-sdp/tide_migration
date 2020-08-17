@@ -92,13 +92,13 @@ class TideGenerateEventDetailsParagraph extends ProcessPluginBase implements Con
    */
   public function transform($value, MigrateExecutableInterface $migrate_executable, Row $row, $destination_property) {
     if (!empty($value)) {
-      $date_range = $value[1];
-      $price_from = $value[2];
-      $price_to = $value[3];
-      $link = $value[4];
-      $location = $value[5];
-      $show_time = $value[6];
-      $event_requirements = $value[7];
+      $date_range = $value[0];
+      $price_from = $value[1];
+      $price_to = $value[2];
+      $link = $value[3];
+      $location = $value[4];
+      $show_time = $value[5];
+      $event_requirements = $value[6];
 
       return $this->generateParagraphEventDetails(
         $date_range,
