@@ -47,27 +47,20 @@ source:
       label: 'Term Name'
       selector: /name
     -
-      name: langcode
-      label: 'Term Langcode'
-      selector: /langcode
-    -
-      name: description
-      label: 'Term Description'
-      selector: /description
-    -
-      name: weight
-      label: 'Term Weight'
-      selector: /weight
+      name: vid
+      label: 'Term Parent Vid'
+      selector: /parent
 
   ids:
     drupal_internal__tid:
       type: integer
 
 process:
-  name: name
-  langcode: langcode
-  description: description
-  weight: weight
+  name:
+    plugin: tide_skip_on_duplicated_taxonomy
+    source:
+      - name
+      - vid
 
 destination:
   plugin: entity:taxonomy_term
