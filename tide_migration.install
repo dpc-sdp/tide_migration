@@ -14,7 +14,7 @@ function tide_migration_uninstall() {
     $database = \Drupal::database();
     $query = $database->select('config', 'c');
     $query->fields('c', ['name']);
-    $query->condition('name', "%" . $database->escapeLike('migrate_plus.migration.tide_migration') . "%", 'LIKE');
+    $query->condition('name', "%" . $database->escapeLike('tide_migration') . "%", 'LIKE');
 
     $config_names = $query->execute()->fetchAll();
 
