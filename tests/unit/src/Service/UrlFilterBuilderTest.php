@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\tide_migration\Service;
 
+use Drupal\Core\Config\ImmutableConfig;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\migrate_plus\DataFetcherPluginInterface;
@@ -27,34 +28,26 @@ class UrlFilterBuilderTest extends UnitTestCase
 
   public function testBuildInitialUrlFiltersReturnsEmptyArrayIfNoUrlsCanBeGenerated()
   {
-    $extension = $this->createMock(Extension::class);
-    $extension->method('getPath')
-      ->willReturn('.');
-
-    $moduleHandler = $this->createMock(ModuleHandlerInterface::class);
-    $moduleHandler->method('getModule')
-      ->willReturn($extension);
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')
+      ->willReturn(391);
 
     $dataFetcher = $this->createMock(DataFetcherPluginInterface::class);
 
-    $urlFilterBuilderService = new UrlFilterBuilder($dataFetcher, $moduleHandler);
+    $urlFilterBuilderService = new UrlFilterBuilder($dataFetcher, $config);
 
     $this->assertEquals([], $urlFilterBuilderService->generateUrls([]));
   }
 
   public function testBuildInitialUrlFiltersReturnUrlsCorrectly()
   {
-    $extension = $this->createMock(Extension::class);
-    $extension->method('getPath')
-      ->willReturn('.');
-
-    $moduleHandler = $this->createMock(ModuleHandlerInterface::class);
-    $moduleHandler->method('getModule')
-      ->willReturn($extension);
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')
+      ->willReturn(391);
 
     $dataFetcher = $this->createMock(DataFetcherPluginInterface::class);
 
-    $urlFilterBuilderService = new UrlFilterBuilder($dataFetcher, $moduleHandler);
+    $urlFilterBuilderService = new UrlFilterBuilder($dataFetcher, $config);
 
     $configuration = [
       'urls' => [
@@ -142,14 +135,6 @@ class UrlFilterBuilderTest extends UnitTestCase
    */
   public function testGenerateOffsetUrlReturnUrlsCorrectly($contents, $expected)
   {
-    $extension = $this->createMock(Extension::class);
-    $extension->method('getPath')
-      ->willReturn('.');
-
-    $moduleHandler = $this->createMock(ModuleHandlerInterface::class);
-    $moduleHandler->method('getModule')
-      ->willReturn($extension);
-
     $stream = $this->createMock(StreamInterface::class);
     $stream->method('getContents')
       ->willReturn(json_encode($contents));
@@ -158,7 +143,11 @@ class UrlFilterBuilderTest extends UnitTestCase
     $dataFetcher->method('getResponseContent')
       ->willReturn($stream);
 
-    $urlFilterBuilderService = new UrlFilterBuilder($dataFetcher, $moduleHandler);
+    $config = $this->createMock(ImmutableConfig::class);
+    $config->method('get')
+      ->willReturn(391);
+
+    $urlFilterBuilderService = new UrlFilterBuilder($dataFetcher, $config);
 
     $configuration = [
       'urls' => [

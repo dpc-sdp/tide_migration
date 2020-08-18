@@ -35,8 +35,8 @@ drush migrate-rollback { MIGRATION ID }
 ```
 
 ### Settings
-```config/tide_migration.settings.yml``` holds variables that can be configured per consumer project. 
-Simply copy the file to config/sync/ folder in the project and define variables to be overridden.
+```config/install/tide_migration.settings.yml``` holds variables that can be configured per consumer project. 
+Simply enable the module to get all migration files in sync directory in the project and update variables to be overridden.
 
 #### Reserved Variable
 Reserved variable allows you to define variable in the setting file and use them in filters.

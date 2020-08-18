@@ -18,17 +18,18 @@ class UrlFilterBuilder {
   private $dataFetcher;
 
   /**
-   * @var ConfigFetch
+   * @var \Drupal\Core\Config\ImmutableConfig
    */
-  private $configFetch;
+  private $config;
 
   /**
    * UrlFilterBuilder constructor.
    * @param DataFetcherPluginInterface $dataFetcher
+   * @param \Drupal\Core\Config\ImmutableConfig $config
    */
-  public function __construct(DataFetcherPluginInterface $dataFetcher) {
+  public function __construct(DataFetcherPluginInterface $dataFetcher, $config) {
     $this->reservedConfigNameEnum = new ReservedConfigNameEnum();
-    $this->configFetch = new ConfigFetch();
+    $this->config = $config;
     $this->dataFetcher = $dataFetcher;
   }
 
@@ -43,7 +44,7 @@ class UrlFilterBuilder {
       } else {
         if (strpos($value, '@') !== FALSE) {
           if ($this->reservedConfigNameEnum->validate(ltrim($value, '@')) === TRUE) {
-            $filters[$key] = $this->configFetch->fetchValue(ltrim($value, '@'));
+            $filters[$key] = $this->config->get(ltrim($value, '@'));
           }
         }
       }
@@ -81,7 +82,7 @@ class UrlFilterBuilder {
 
           if (strpos($configuration['site'], '@') !== FALSE) {
             if ($this->reservedConfigNameEnum->validate(ltrim($configuration['site'], '@')) === TRUE) {
-              $filters['site'] = $this->configFetch->fetchValue(ltrim($configuration['site'], '@'));
+              $filters['site'] = $this->config->get(ltrim($configuration['site'], '@'));
             }
           }
         }
