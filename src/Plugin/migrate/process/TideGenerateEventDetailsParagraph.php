@@ -215,6 +215,6 @@ class TideGenerateEventDetailsParagraph extends ProcessPluginBase implements Con
 
     $paragraph->save();
 
-    return [(int)$paragraph->id(), (int)$paragraph->getRevisionId()];
+    return [(int) $paragraph->id(), (int) $paragraph->getRevisionId()];
   }
 }

@@ -65,11 +65,10 @@ class TideMigrationLookupTaxonomy extends ProcessPluginBase implements Container
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     if (!$migration instanceof MigrationInterface) {
-      throw new \InvalidArgumentException("The sixth argument to " . __METHOD__ . " must be an instance of MigrationInterface.");
+      throw new \InvalidArgumentException("The fifth argument to " . __METHOD__ . " must be an instance of MigrationInterface.");
     }
 
     $this->migration = $migration;
-
     $this->taxonomy_lookup = $taxonomy_lookup;
   }
 
