@@ -14,28 +14,7 @@ source:
   site: '@site'
   item_selector: events/
 
-  urls:
-    -
-      url: https://content.vic.gov.au/api/v1/node/event
-      include:
-        - field_audience
-        - field_tags
-        - field_topic
-        - field_event_category
-        - field_event_details
-        - field_event_details.field_event_requirements
-        - field_featured_image
-        - field_featured_image.field_media_image
-        - field_featured_image.field_media_topic
-      page_filter:
-        offset: 0
-        limit: 10
-      filters:
-        site:
-          condition:
-            path: field_node_site.tid
-            operator: =
-            value: '@site'
+  urls: '@event_urls'
 
   fields:
     -

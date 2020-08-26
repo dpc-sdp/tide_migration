@@ -41,6 +41,9 @@ Simply enable the module to get all migration files in sync directory in the pro
 #### Reserved Variable
 Reserved variable allows you to define variable in the setting file and use them in filters.
 
+- site
+- event_urls
+
 #### Define Reserved Variable
 
 Below are the steps involved to define a new reserved variable

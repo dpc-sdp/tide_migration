@@ -1,9 +1,9 @@
-name: Together VIC Migrations
+name: Tide Migrations
 type: module
 description: Migrate content from www.vic.gov.au
 core: 8.x
 version: 8.x-1.0
-package: dhhs
+package: tide_migration
 dependencies:
   - migrate_plus
   - migrate_tools

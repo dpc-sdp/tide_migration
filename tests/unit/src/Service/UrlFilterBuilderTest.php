@@ -82,6 +82,45 @@ class UrlFilterBuilderTest extends UnitTestCase
     ], $urlFilterBuilderService->buildInitialUrlFilters($configuration));
   }
 
+  public function testBuildInitialUrlFiltersReturnUrlsCorrectlyWhenReservedVariableUsed()
+  {
+    $config = $this->createMock(ImmutableConfig::class);
+
+    $config->method('get')
+      ->withConsecutive(['event_urls'], ['site'])
+      ->willReturnOnConsecutiveCalls([
+        [
+          'url' => 'https://www.test.com',
+          'include' => ['field'],
+          'page_filter' => [
+            'offset' => 0,
+            'limit' => 10,
+          ],
+          'filters' => [
+            'site' => [
+              'condition' => [
+                'path' => 'field_node_site.tid',
+                'operator' => '=',
+                'value' => 3
+              ]
+            ]
+          ]
+        ]
+      ], 391);
+
+    $dataFetcher = $this->createMock(DataFetcherPluginInterface::class);
+
+    $urlFilterBuilderService = new UrlFilterBuilder($dataFetcher, $config);
+
+    $configuration = [
+      'urls' => '@event_urls'
+    ];
+
+    $this->assertEquals([
+      'https://www.test.com?filter%5Bsite%5D%5Bcondition%5D%5Bpath%5D=field_node_site.tid&filter%5Bsite%5D%5Bcondition%5D%5Boperator%5D=%3D&filter%5Bsite%5D%5Bcondition%5D%5Bvalue%5D=3&include=field&page%5Boffset%5D=0&page%5Blimit%5D=10'
+    ], $urlFilterBuilderService->buildInitialUrlFilters($configuration));
+  }
+
   public function offsetUrlContentProvider() {
     return [
       [

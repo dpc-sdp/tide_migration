@@ -9,5 +9,5 @@ id: tide_migration_event
 label: Tide Event Migration
 source_type: event
 description: Migration group to hold event migration
-module: null
+module: tide_migration
 shared_configuration: null

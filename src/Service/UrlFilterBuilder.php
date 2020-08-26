@@ -61,7 +61,15 @@ class UrlFilterBuilder {
     $urls = [];
 
     if (!empty($configuration['urls'])) {
-      foreach ($configuration['urls'] as $url) {
+      $config_urls = $configuration['urls'];
+
+      if (is_string($configuration['urls']) && strpos($configuration['urls'], '@') !== FALSE) {
+        if ($this->reservedConfigNameEnum->validate(ltrim($configuration['urls'], '@')) === TRUE) {
+          $config_urls = $this->config->get(ltrim($configuration['urls'], '@'));
+        }
+      }
+
+      foreach ($config_urls as $url) {
         $filters = [];
 
         if (!empty($url['filters'])) {
@@ -90,6 +98,8 @@ class UrlFilterBuilder {
         $urls[] = $url['url'] . '?' .http_build_query($filters);
       }
     }
+
+//    var_dump($urls); die();
 
     return $urls;
   }
