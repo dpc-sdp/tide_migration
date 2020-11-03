@@ -1,0 +1,36 @@
+# This is just an example.
+#id: migrate_paragraph_example
+#label: Tide migration example - paragraphs
+#migration_group: tide_migration_entities
+#source:
+#  plugin: tide_migration_paragraph_source
+#  key: default
+#  bundle: paragraph_a
+#  field_names:
+#    - field_title
+#    - field_summary
+#    - field_image
+#process:
+#  parent_id: parent_id
+#  parent_type: parent_type
+#  parent_field_name: parent_field_name
+#  field_title:
+#    plugin: sub_process
+#    source: field_title
+#    process:
+#      value: value
+#  field_summary:
+#    plugin: sub_process
+#    source: field_summary
+#    process:
+#      value: value
+#      format:
+#        plugin: default_value
+#        default_value: 'basic_html'
+#destination:
+#  plugin: 'entity_reference_revisions:paragraph'
+#  default_bundle: paragraph_b
+#dependencies:
+#  enforced:
+#    module:
+#      - tide_migration

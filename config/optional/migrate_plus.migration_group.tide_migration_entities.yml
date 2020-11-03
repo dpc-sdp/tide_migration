@@ -1,0 +1,10 @@
+# This is just an example.
+#id: tide_migration_entities
+#label: example
+#description: example
+#source_type: example
+#shared_configuration: null
+#dependencies:
+#  enforced:
+#    module:
+#      - tide_migration
