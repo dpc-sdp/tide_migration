@@ -21,6 +21,9 @@ use Drupal\paragraphs\Entity\Paragraph;
  *   plugin: tide_migration_paragraph_source
  *   key: default
  *   bundle: paragraph_a
+ *   parent_type: node
+ *   parent_field_name: field_landing_page_component
+ *   bundle: paragraph_a
  *   field_names:
  *     - field_name_1
  *     - field_name_2
@@ -72,6 +75,12 @@ class TideMigrationParagraphSource extends SqlBase {
     if (!isset($this->configuration['field_names'])) {
       throw new BadPluginDefinitionException($this->pluginDefinition['source']['plugin'], 'field_names');
     }
+    if (!isset($this->configuration['field_names'])) {
+      throw new BadPluginDefinitionException($this->pluginDefinition['source']['plugin'], 'parent_type');
+    }
+    if (!isset($this->configuration['field_names'])) {
+      throw new BadPluginDefinitionException($this->pluginDefinition['source']['plugin'], 'parent_field_name');
+    }
     $fields = [
       'id',
       'revision_id',
@@ -83,7 +92,9 @@ class TideMigrationParagraphSource extends SqlBase {
     ];
     $query = $this->select('paragraphs_item_field_data', 'tmps')
       ->fields('tmps', $fields)
-      ->condition('type', $this->configuration['bundle']);
+      ->condition('type', $this->configuration['bundle'])
+      ->condition('parent_type', $this->configuration['parent_type'])
+      ->condition('parent_field_name', $this->configuration['parent_field_name']);
     return $query;
   }
 
