@@ -90,11 +90,12 @@ class TideMigrationParagraphSource extends SqlBase {
       'parent_field_name',
       'created',
     ];
-    $query = $this->select('paragraphs_item_field_data', 'tmps')
-      ->fields('tmps', $fields)
-      ->condition('type', $this->configuration['bundle'])
-      ->condition('parent_type', $this->configuration['parent_type'])
-      ->condition('parent_field_name', $this->configuration['parent_field_name']);
+    $query = $this->select('paragraphs_item_field_data', 'tmps');
+    $query->innerJoin('node__field_landing_page_component', 'n', 'n.field_landing_page_component_target_id=tmps.id');
+    $query->fields('tmps', $fields)
+      ->condition('tmps.type', $this->configuration['bundle'])
+      ->condition('tmps.parent_type', $this->configuration['parent_type'])
+      ->condition('tmps.parent_field_name', $this->configuration['parent_field_name']);
     return $query;
   }
 
@@ -105,6 +106,7 @@ class TideMigrationParagraphSource extends SqlBase {
     if (!isset($this->configuration['field_names'])) {
       throw new BadPluginDefinitionException($this->pluginDefinition['source']['plugin'], 'field_names');
     }
+
     // Gets current Paragraph entity.
     $paragraph_id = $row->getSourceProperty('id');
     $paragraph = Paragraph::load($paragraph_id);

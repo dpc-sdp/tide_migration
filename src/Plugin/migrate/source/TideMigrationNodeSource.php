@@ -35,13 +35,7 @@ class TideMigrationNodeSource extends SqlBase {
    */
   public function fields() {
     $fields = [
-      'nid' => $this->t('Node ID'),
-      'vid' => $this->t('Node revision ID'),
-      'type' => $this->t('Node bundle'),
-      'title' => $this->t('Node title'),
-      'uid' => $this->t('Node user id'),
-      'created' => $this->t('Node created time - timestamp'),
-      'changed' => $this->t('Node changed time - timestamp'),
+      'entity_id' => $this->t('Node ID'),
     ];
     return $fields;
   }
@@ -52,9 +46,9 @@ class TideMigrationNodeSource extends SqlBase {
    */
   public function getIds() {
     return [
-      'nid' => [
+      'entity_id' => [
         'type' => 'integer',
-        'alias' => 'tmns',
+        'alias' => 'n',
       ],
     ];
   }
@@ -70,17 +64,25 @@ class TideMigrationNodeSource extends SqlBase {
       throw new BadPluginDefinitionException($this->pluginDefinition['source']['plugin'], 'field_names');
     }
     $fields = [
-      'nid',
-      'vid',
-      'type',
-      'title',
-      'uid',
-      'created',
-      'changed',
+      'entity_id',
     ];
-    $query = $this->select('node_field_data', 'tmns')
-      ->fields('tmns', $fields)
-      ->condition('type', $this->configuration['bundle']);
+    $types = [
+      'card_navigation_auto',
+      'card_navigation_featured_auto',
+      'card_navigation_featured',
+      'card_navigation',
+      'card_promotion_auto',
+      'card_promotion',
+    ];
+    $query = $this->select('node__field_landing_page_component', 'n');
+    $query->innerJoin('paragraphs_item_field_data', 'p', 'n.field_landing_page_component_target_id=p.id');
+    $query->condition('p.parent_field_name', 'field_landing_page_component');
+    $or = $query->orConditionGroup();
+    foreach ($types as $type) {
+      $or->condition('p.type', $type);
+    }
+    $query->fields('n', $fields)->condition($or);
+    $query->distinct();
     return $query;
   }
 
@@ -92,9 +94,11 @@ class TideMigrationNodeSource extends SqlBase {
       throw new BadPluginDefinitionException($this->pluginDefinition['source']['plugin'], 'field_names');
     }
     // Gets current Node entity.
-    $nid = $row->getSourceProperty('nid');
+    $nid = $row->getSourceProperty('entity_id');
     $node = Node::load($nid);
     // Loop fields.
+    $row->setSourceProperty('title',$node->title);
+    $row->setSourceProperty('nid',$node->id());
     foreach ($this->configuration['field_names'] as $field_name) {
       $value = $node->get($field_name)->getValue();
       $row->setSourceProperty($field_name, $value);
