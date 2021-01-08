@@ -1,0 +1,50 @@
+# This is just an example.
+#id: migrate_nodes_example
+#label: Tide migration example - nodes
+#migration_group: tide_migration_entities
+#source:
+#  plugin: tide_migration_node_source
+#  key: default
+#  bundle: article
+#  field_names:
+#    - body
+#    - comment
+#    - field_components
+#    - field_help
+#    - field_image
+#    - field_options
+#    - field_tags
+#process:
+#  nid: nid
+#  type:
+#    plugin: default_value
+#    default_value: article
+#  title: title
+#  body:
+#    plugin: sub_process
+#    source: body
+#    process:
+#      value: value
+#      format:
+#        plugin: default_value
+#        default_value: 'basic_html'
+#  field_components:
+#    plugin: tide_migration_paragraph_process
+#    migrate_ids:
+#      - migrate_paragraph_example
+#      - migrate_paragraph_example_b
+#    target_field: field_components
+#    overwrite: false
+#destination:
+#  plugin: 'entity:node'
+#  default_bundle: article
+#  overwrite_properties:
+#    - field_components
+#migration_dependencies:
+#  optional:
+#    - migrate_paragraph_example
+#    - migrate_paragraph_example_b
+#dependencies:
+#  enforced:
+#    module:
+#      - tide_migration
