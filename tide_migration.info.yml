@@ -7,3 +7,4 @@ dependencies:
   - migrate_plus
   - migrate_tools
   - migrate_file
+  - migrate_source_ui
