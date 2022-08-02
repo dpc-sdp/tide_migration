@@ -114,7 +114,7 @@ class TideMigrationForm extends FormBase {
   public function validateForm(array &$form, FormStateInterface $form_state) {
     parent::validateForm($form, $form_state);
     //Support the data files.
-    $validators = ['file_validate_extensions' => ['json', 'csv', 'xml']];
+    $validators = ['file_validate_extensions' => ['csv json xml']];
     // Save file to private file system to protect data file.
     $file_destination = 'private://';
     $file = file_save_upload('source_file', $validators, $file_destination, 0, FileSystemInterface::EXISTS_REPLACE);
