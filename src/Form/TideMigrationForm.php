@@ -6,10 +6,8 @@ use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\migrate\Plugin\MigrationInterface;
-use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Json;
-use Drupal\migrate_plus\Plugin\migrate_plus\data_parser\Xml;
-use Drupal\migrate_source_csv\Plugin\migrate\source\CSV;
-use Drupal\migrate_plus\Plugin\migrate\source\Url;
+use Drupal\migrate_plus\Entity\MigrationGroup;
+use Drupal\migrate_plus\Entity\MigrationGroupInterface;
 use Drupal\migrate_source_ui\StubMigrationMessage;
 use Drupal\migrate_source_ui\MigrateBatchExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -68,18 +66,17 @@ class TideMigrationForm extends FormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $options = [];
-    foreach ($this->definitions as $definition) {
-      $migrationInstance = $this->pluginManagerMigration->createStubMigration($definition);
-      if ($migrationInstance->getSourcePlugin() instanceof CSV
-        || $migrationInstance->getSourcePlugin() instanceof Json
-        || $migrationInstance->getSourcePlugin() instanceof Xml
-        || $migrationInstance->getSourcePlugin() instanceof Url) {
-        $id = $definition['id'];
-        $options[$id] = $this->t('%id', [
-          '%id' => $definition['label'] ?? $id,
-        ]);
+
+    $query = \Drupal::entityTypeManager()->getStorage('migration_group')->getQuery();
+    $group_ids = $query->execute();
+    $groups =  \Drupal::entityTypeManager()->getStorage('migration_group')->loadMultiple($group_ids);
+
+    foreach ($groups as $group) {
+      if ($group instanceof MigrationGroupInterface) {
+        $options[$group->id()] = $group->label();
       }
     }
+
     $form['tide_migration'] = [
       '#type' => 'details',
       '#open' => TRUE,
@@ -93,6 +90,7 @@ class TideMigrationForm extends FormBase {
     ];
     $form['tide_migration']['source_file'] = [
       '#type' => 'file',
+      '#multiple' => TRUE,
       '#title' => $this->t('Data source file'),
       '#description' => t('Select the data file you want to migrate, allowed extensions: csv, json or xml.'),
     ];
@@ -135,21 +133,39 @@ class TideMigrationForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $migration_id = $form_state->getValue('migrations');
-    $migration = $this->pluginManagerMigration->createInstance($migration_id);
-    $status = $migration->getStatus();
-    if ($status !== MigrationInterface::STATUS_IDLE) {
-      $migration->setStatus(MigrationInterface::STATUS_IDLE);
-      $this->messenger()->addWarning($this->t('Migration @id reset to Idle', ['@id' => $migration_id]));
+    $group_id = $form_state->getValue('migrations');
+
+    $query = \Drupal::entityTypeManager()->getStorage('migration')->getQuery()
+      ->accessCheck(TRUE);
+
+    $migration_groups = MigrationGroup::loadMultiple();
+
+    if (array_key_exists($group_id, $migration_groups)) {
+      $query->condition('migration_group', $group_id);
     }
-    $options = [
-      'file_path' => $form_state->getValue('file_path'),
-    ];
-    if ($form_state->getValue('update_existing_records')) {
-      $options['update'] = TRUE;
+    else {
+      $query->notExists('migration_group');
     }
-    $executable = new MigrateBatchExecutable($migration, new StubMigrationMessage(), $options);
-    $executable->batchImport();
+
+    $migration_ids = array_values($query->execute());
+
+    foreach ($migration_ids as $mid) {
+      $migration = $this->pluginManagerMigration->createInstance($mid);
+      $status = $migration->getStatus();
+      if ($status !== MigrationInterface::STATUS_IDLE) {
+        $migration->setStatus(MigrationInterface::STATUS_IDLE);
+        $this->messenger()->addWarning($this->t('Migration @id reset to Idle', ['@id' => $mid]));
+      }
+      $options = [
+        'file_path' => $form_state->getValue('file_path'),
+      ];
+      if ($form_state->getValue('update_existing_records')) {
+        $options['update'] = TRUE;
+      }
+      $executable = new MigrateBatchExecutable($migration, new StubMigrationMessage(), $options);
+      $executable->batchImport();
+    }
+
   }
 
 }
