@@ -26,13 +26,6 @@ class TideMigrationForm extends FormBase {
   protected $pluginManagerMigration;
 
   /**
-   * The migration definitions.
-   *
-   * @var array
-   */
-  protected $definitions;
-
-  /**
    * TideMigrationUiForm constructor.
    *
    * @param \Drupal\migrate\Plugin\MigrationPluginManager $plugin_manager_migration
@@ -42,7 +35,6 @@ class TideMigrationForm extends FormBase {
    */
   public function __construct(MigrationPluginManager $plugin_manager_migration) {
     $this->pluginManagerMigration = $plugin_manager_migration;
-    $this->definitions = $this->pluginManagerMigration->getDefinitions();
   }
 
   /**
