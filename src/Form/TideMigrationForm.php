@@ -125,6 +125,8 @@ class TideMigrationForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Increase migrate batch process for 3 seconrds while a group is selected.
+    ini_set('max_execution_time', 180);
     $group_id = $form_state->getValue('migrations');
 
     $query = \Drupal::entityTypeManager()->getStorage('migration')->getQuery()
