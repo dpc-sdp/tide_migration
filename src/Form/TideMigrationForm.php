@@ -2,6 +2,7 @@
 
 namespace Drupal\tide_migration\Form;
 
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -17,6 +18,12 @@ use Drupal\migrate\Plugin\MigrationPluginManager;
  * Tide migrationform.
  */
 class TideMigrationForm extends FormBase {
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
 
   /**
    * The migration plugin manager.
@@ -26,6 +33,13 @@ class TideMigrationForm extends FormBase {
   protected $pluginManagerMigration;
 
   /**
+   * The migration definitions.
+   *
+   * @var array
+   */
+  protected $definitions;
+
+  /**
    * TideMigrationUiForm constructor.
    *
    * @param \Drupal\migrate\Plugin\MigrationPluginManager $plugin_manager_migration
@@ -33,8 +47,10 @@ class TideMigrationForm extends FormBase {
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory service.
    */
-  public function __construct(MigrationPluginManager $plugin_manager_migration) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, MigrationPluginManager $plugin_manager_migration) {
+    $this->entityTypeManager = $entity_type_manager;
     $this->pluginManagerMigration = $plugin_manager_migration;
+    $this->definitions = $this->pluginManagerMigration->getDefinitions();
   }
 
   /**
@@ -42,6 +58,7 @@ class TideMigrationForm extends FormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
+      $container->get('entity_type.manager'),
       $container->get('plugin.manager.migration')
     );
   }
@@ -59,9 +76,9 @@ class TideMigrationForm extends FormBase {
   public function buildForm(array $form, FormStateInterface $form_state) {
     $options = [];
 
-    $query = \Drupal::entityTypeManager()->getStorage('migration_group')->getQuery();
+    $query = $this->entityTypeManager->getStorage('migration_group')->getQuery();
     $group_ids = $query->execute();
-    $groups =  \Drupal::entityTypeManager()->getStorage('migration_group')->loadMultiple($group_ids);
+    $groups =  $this->entityTypeManager->getStorage('migration_group')->loadMultiple($group_ids);
 
     foreach ($groups as $group) {
       if ($group instanceof MigrationGroupInterface) {
@@ -125,11 +142,9 @@ class TideMigrationForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    // Increase migrate batch process for 3 seconrds while a group is selected.
-    ini_set('max_execution_time', 180);
     $group_id = $form_state->getValue('migrations');
 
-    $query = \Drupal::entityTypeManager()->getStorage('migration')->getQuery()
+    $query = $this->entityTypeManager->getStorage('migration')->getQuery()
       ->accessCheck(TRUE);
 
     $migration_groups = MigrationGroup::loadMultiple();
