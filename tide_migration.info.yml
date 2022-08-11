@@ -1,0 +1,10 @@
+name: Tide Migrations
+type: module
+description: Migrate content from www.vic.gov.au
+core_version_requirement: ^8.9 || ^9
+package: tide_migration
+dependencies:
+  - migrate_plus
+  - migrate_tools
+  - migrate_file
+  - migrate_source_ui

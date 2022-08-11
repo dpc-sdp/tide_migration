@@ -1,0 +1,7 @@
+tide_migration.form:
+  path: '/admin/config/development/configuration/tide_migration/import'
+  defaults:
+    _title: 'Tide migration'
+    _form: '\Drupal\tide_migration\Form\TideMigrationForm'
+  requirements:
+    _permission: 'access tide migration'

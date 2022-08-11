@@ -1,0 +1,32 @@
+{
+    "name": "dpc-sdp/tide_migration",
+    "description": "Central place to store all migrations related to Tide Drupal 8 distribution",
+    "type": "drupal-module",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "dpc-sdp/tide_core": "^3.0.0",
+        "drupal/migrate_source_ui": "^1.0"
+    },
+    "require-dev": {
+        "drupal/core-dev": "^9.2.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "Drupal\\tide_migration\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests/unit/src/"
+        ]
+    },
+    "suggest": {
+        "dpc-sdp/tide_api:^1.2.11": "Allows to use Drupal in headless mode"
+    },
+    "repositories": {
+        "drupal": {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        }
+    }
+}

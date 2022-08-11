@@ -1,0 +1,4 @@
+tide_migration_ui.import:
+  route_name: tide_migration.form
+  title: Tide migration
+  parent_id: config.import
