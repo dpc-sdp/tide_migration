@@ -1,0 +1,4 @@
+access tide migration ui:
+  title: 'Access Tide Migration'
+  description: 'Allow access to use the tide migration.'
+  restrict access: true
