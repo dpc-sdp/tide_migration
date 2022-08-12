@@ -8,14 +8,27 @@ Central repository to hold all migrations.
 * Usage
 
 ## INTRODUCTION
-The Tide Migration module provides the functionality to import content from content.vic.gov.au to any other Drupal 8 Website.
+The Tide Migration module provides the functionality to import content from various sources to SDP sites.
 
 ## REQUIREMENTS
-* [Migrate Plus](https://drupal.org/project/migrate_plus)
-* [Migrate File](https://drupal.org/project/migrate_file)
-* [Migrate Tools](https://drupal.org/project/migrate_tools)
+* [Migrate Source UI](https://drupal.org/project/migrate_source_ui)
 
 ## USAGE
+* Run migration via UI
+
+  - Navigate to: admin/config/development/configuration/single/import
+
+  - Select:
+    - Configuration type= "Simple configuration"
+
+  - Enter
+    - Configuration name = "migrate_plus.migration.{{migration_id}}" (File name without extension)
+
+  - Paste
+    - Paste your configuration here: content from file migrate_plus.migration.{{migration_id}}.yml
+
+  - Click the "Import" button.
+
 * Run migration via Drush command:
 
 ```
@@ -32,30 +45,4 @@ drush migrate-reset-status { MIGRATION ID }
 
 ```
 drush migrate-rollback { MIGRATION ID }
-```
-
-### Settings
-```config/install/tide_migration.settings.yml``` holds variables that can be configured per consumer project. 
-Simply enable the module to get all migration files in sync directory in the project and update variables to be overridden.
-
-#### Reserved Variable
-Reserved variable allows you to define variable in the setting file and use them in filters.
-
-- site
-- event_urls
-
-#### Define Reserved Variable
-
-Below are the steps involved to define a new reserved variable
-
-- In ```config/tide_migration.settings.yml``` create a new variable with a value ```test: 123```
-- In ```src/Enum/ReservedConfigNameEnum``` add a new constant i.e. ```const TEST = 'test'``` and add it to ```getReservedNames()```
-- Go into a migration file you have created and use it in your filters i.e. ```value: '@site'```
-- The functionality can be extended to be used in more locations by following an example below:
-```
-if (strpos($filter, '@') !== FALSE) {
-  if ($this->reservedConfigNameEnum->validate(ltrim($filter, '@')) === TRUE) {
-    $value = $this->configFetch->fetchValue(ltrim($filter, '@'));
-  }
-}
 ```
