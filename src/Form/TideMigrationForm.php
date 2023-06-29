@@ -99,7 +99,6 @@ class TideMigrationForm extends FormBase {
     ];
     $form['tide_migration']['source_file'] = [
       '#type' => 'file',
-      '#multiple' => TRUE,
       '#title' => $this->t('Data source file'),
       '#description' => t('Select the data file you want to migrate, allowed extensions: csv, json or xml.'),
     ];
