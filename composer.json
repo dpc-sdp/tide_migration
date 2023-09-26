@@ -8,7 +8,7 @@
         "drupal/migrate_source_ui": "^1.0"
     },
     "require-dev": {
-        "drupal/core-dev": "10.1.0"
+        "drupal/core-dev": "^10.1.0"
     },
     "autoload": {
         "psr-4": {
