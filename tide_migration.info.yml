@@ -1,7 +1,7 @@
 name: Tide Migrations
 type: module
 description: The Tide Migration module provides the functionality to import content from various sources to SDP sites.
-core_version_requirement: ^8.9 || ^9
+core_version_requirement: ^9 || ^10
 package: tide_migration
 dependencies:
   - migrate_plus
