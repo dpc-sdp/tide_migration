@@ -10,7 +10,7 @@ use Drupal\migrate\Plugin\MigrationInterface;
 use Drupal\migrate_plus\Entity\MigrationGroup;
 use Drupal\migrate_plus\Entity\MigrationGroupInterface;
 use Drupal\migrate_source_ui\StubMigrationMessage;
-use Drupal\migrate_source_ui\MigrateBatchExecutable;
+use Drupal\migrate_tools\MigrateBatchExecutable;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\migrate\Plugin\MigrationPluginManager;
 
@@ -168,7 +168,7 @@ class TideMigrationForm extends FormBase {
         'file_path' => $form_state->getValue('file_path'),
       ];
       if ($form_state->getValue('update_existing_records')) {
-        $options['update'] = TRUE;
+        $options['update'] = 1;
       }
       $executable = new MigrateBatchExecutable($migration, new StubMigrationMessage(), $options);
       $executable->batchImport();
